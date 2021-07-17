@@ -73,11 +73,11 @@ const int hBridgeMotorPin0 = 19;           /* the number of the h bridge pin 1 *
 const int hBridgeMotorPin1 = 21;           /* the number of the h bridge pin 2 */
 
 int limitSwitchState0 = 0;                 /* variable to keep track of the state of limitSwitchPin0 */
-int limitSwitchState1 = 0;			       /* variable to keep track of the state of limitSwitchPin1 */
-int manualToggleButtonState = 0;		   /* variable to keep track of the state of manualToggleButtonPin */
+int limitSwitchState1 = 0;                 /* variable to keep track of the state of limitSwitchPin1 */
+int manualToggleButtonState = 0;           /* variable to keep track of the state of manualToggleButtonPin */
 
-String drawPosition = "closed";			   /* Allows the program to keep track of the last known position of the draw*/
-boolean drawIsMoving = false;			   /* Allows the program to keep track of weather the draw is currently moving or not */
+String drawPosition = "closed";            /* Allows the program to keep track of the last known position of the draw*/
+boolean drawIsMoving = false;              /* Allows the program to keep track of weather the draw is currently moving or not */
 boolean awaitingIntervention = false;      /* This becomes true when a special event occurs such as someone manually breaking into the safe, or auto-close-assist. */
 String drawMovingDirection = "null";       /* Keep track of what direction the draw is moving, can one of the following:  null | closing | opening */
 
