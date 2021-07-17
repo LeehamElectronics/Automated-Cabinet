@@ -4,7 +4,5 @@
 ## I personally use my Apple watch with the Home Assistant application to control the cabinet. The Home Assistant app also sends me notification to my Watch and phone when an event happens, here is a list of events:
 ## - "Safe manually opened (someone is breaking in!)", "cabinet closed", "cabinet opened", and "cabinet automatically closed."
 
-### If you like through this projects commit history, you will find all of my MQTT server credentials, usernames passwords ect, this is because back in the day I did not bother to store credentials in seperate files, but don't worry I have changed all of my credentials since then 😅
 
-
-#### Credit to my awesome high school teacher Steve Donaldson for teaching me fundementals in electronics / general technologies and supporting me while I built this project at school!
+##### Credit to my awesome high school teacher Steve Donaldson for teaching me fundementals in electronics / general technologies and supporting me while I built this project at school!
