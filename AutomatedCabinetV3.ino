@@ -89,9 +89,8 @@ int failSafeTimout = 6500;                 /* Specify how much time we should al
 /* ---------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------    Setup Function   ----------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------- */
-#pragma region
 void setup() {
-	Serial.println(String(map()));
+	// Serial.println(String(map()));
 	pinMode(hBridgeMotorPin0, OUTPUT);
 	pinMode(hBridgeMotorPin1, OUTPUT);
 	pinMode(limitSwitchPin0, INPUT_PULLUP);  /* Although we told the ESP32 to pullup this pin, some chips don't support it so you need to manually pull this up with a resistor. */
@@ -124,13 +123,11 @@ void setup() {
 	delay(100); /* Give our ESP32 some time to breath right? */
 
 }
-#pragma endregion
 
 
 /* ---------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------    Main Loop Function   ---------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------- */
-#pragma region
 void loop() {
 
 	/* The next 3 lines check what the state of each button is (open or closed...) */
@@ -218,7 +215,6 @@ void loop() {
 	client.loop();
 
 }				
-#pragma endregion
 
 
 /* ---------------------------------------------------------------------------------------------------------------------------
