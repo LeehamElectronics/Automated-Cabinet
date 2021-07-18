@@ -10,8 +10,8 @@ Initially I built it so the drawer would open or close when someone knocked on t
 This project was actually my first Arduino project and has therefore been through a lot of re-writes. The software also contians other advanced features such as notifying you when someone is trying to manually open the draw, and also assisting the user when they want to close the draw by detecting when someone is trying to push the draw in, similar to how a CD reader automatically closes when you push on it.
 
 <p float="left">
-  <img src="https://user-images.githubusercontent.com/51737378/126053071-e97903c2-3751-4335-8a0b-5a7197cc2522.JPG" width="565" />
-  <img src="https://user-images.githubusercontent.com/51737378/126053037-1722f64a-bc8a-4275-bbc7-e69ac5d42ec0.jpg" width="300" />
+  <img src="https://user-images.githubusercontent.com/51737378/126053071-e97903c2-3751-4335-8a0b-5a7197cc2522.JPG" width="500" />
+  <img src="https://user-images.githubusercontent.com/51737378/126053037-1722f64a-bc8a-4275-bbc7-e69ac5d42ec0.jpg" width="265" />
 </p>
 
 
