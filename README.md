@@ -1,8 +1,24 @@
-# AutomatedCabinetV3
-## This project was started back in 2017 as my year 9 school project for engineering class. It's a large hand made timber cabinet with a sort of secret draw inside it, the draw is fully automated and opens and closses at will.
-## I designed and built the entire electrical system which can be viewed in the links below. The electrical design went over many changes over time, originally you could activate the draw by knocking on it loudly, then it changed to a RFID scanner, and now finnaly it operates over the IoT using MQTT and node red.
-## I personally use my Apple watch with the Home Assistant application to control the cabinet. The Home Assistant app also sends me notification to my Watch and phone when an event happens, here is a list of events:
-## - "Safe manually opened (someone is breaking in!)", "cabinet closed", "cabinet opened", and "cabinet automatically closed."
+# Automated IoT Cabinet
+## This repo contians the software I wrote for my Year 9 school project.
+
+#
+
+This project started off as a simple wood working project in high school, I designed, built, and furnished a 500mm x 500mm x 500mm timber cabinet with a hidden drawer inside. I continued working on this project in my other engineering class and successfully automated the drawer with an electric motor and other electrical components.
+
+Initially I built it so the drawer would open or close when someone knocked on the timber with their hand using a sound sensor. Over time I modified it and now, in 2021, I can open and close it from my Apple Watch or phone from anywhere in the world using NodeRed and Home Assistant software.
+
+This project was actually my first Arduino project and has therefore been through a lot of re-writes. The software also contians other advanced features such as notifying you when someone is trying to manually open the draw, and also assisting the user when they want to close the draw by detecting when someone is trying to push the draw in, similar to how a CD reader automatically closes when you push on it.
+
+If your a student looking for ideas or advice on how to build something similar, feel free to look at the code and contact me if you have any questions.
+
+I am still planning on adding a few things to it such as a locking feature that prevents the drawer from opening mechanically. 
+#
+
+Feel free to check out my other open source content at [LeehamElectronics](https://github.com/LeehamElectronics)
+
+This project uses c++, c, and other technologies for the front end such as NodeRed and Home Assistant and MQTT. The physical product I built with laminated pine, Jarrah timber, and a little bit of Cypress for internal strength.
 
 
-##### Credit to my awesome high school teacher Steve Donaldson for teaching me fundementals in electronics / general technologies and supporting me while I built this project at school!
+###### Credit to my awesome high school teacher Steve Donaldson for teaching me fundementals in electronics / general technologies and supporting me while I built this project at school!
+
+*It ain't much but it's honest work*
