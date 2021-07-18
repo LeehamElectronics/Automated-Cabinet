@@ -91,6 +91,7 @@ int failSafeTimout = 6500;                 /* Specify how much time we should al
 --------------------------------------------------------------------------------------------------------------------------- */
 #pragma region
 void setup() {
+	Serial.println(String(map()));
 	pinMode(hBridgeMotorPin0, OUTPUT);
 	pinMode(hBridgeMotorPin1, OUTPUT);
 	pinMode(limitSwitchPin0, INPUT_PULLUP);  /* Although we told the ESP32 to pullup this pin, some chips don't support it so you need to manually pull this up with a resistor. */
@@ -152,6 +153,7 @@ void loop() {
 				if (currentMillis - previousMillis >= failSafeTimout) {
 					// save the last time we checked the time in memory
 					previousMillis = currentMillis;
+					awaitingIntervention = true;
 					stopDrawFromMoving();
 					client.publish("acs_output", (char*)"ERROR26");
 					Serial.println("ERROR! Motors have stopped due to timeout, are the limit switches broken? Is there to much weight in the Draw?");
@@ -172,6 +174,7 @@ void loop() {
 				if (currentMillis - previousMillis >= failSafeTimout) {
 					// save the last time we checked the time in memory
 					previousMillis = currentMillis;
+					awaitingIntervention = true;
 					stopDrawFromMoving();
 					client.publish("acs_output", (char*)"ERROR26");
 					Serial.println("ERROR! Motors have stopped due to timeout, are the limit switches broken? Is there to much weight in the Draw?");
