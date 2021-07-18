@@ -15,7 +15,7 @@ This project was actually my first Arduino project and has therefore been throug
 </p>
 
 
-If your a student looking for ideas or advice on how to build something similar, feel free to look at the code and contact me if you have any questions.
+If you are a student looking for ideas or advice on how to build something similar, feel free to look at the code and contact me if you have any questions.
 
 I am still planning on adding a few things to it such as a locking feature that prevents the drawer from opening mechanically. 
 #
