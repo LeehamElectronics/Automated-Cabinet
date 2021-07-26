@@ -4,6 +4,9 @@
  Author:	Liam Price
  Purpose: Runs on ESP32 Espressif chip to automate a timber cabinet to be opened and closed over the internet.
  GitHub: https://github.com/LeehamElectronics/Automated-Cabinet
+ 
+ Please note: There is an absurd amount of commenting in this program, some may deem as unnecessary, I have decided to leave it in here to try and help students who are
+ 	  --- completely new to computer programming and electronics in general. Feel free to fork and make a pull request if you notice anything that could improve. Thanks!
 */
 
 /*
@@ -184,7 +187,7 @@ void loop() {
 		{
 
 			if (drawPosition == "closed") {
-				if (limitSwitchState1 == HIGH) { // when limit switch 1 is released during no operation in the closed position, this means somone has MANUALLY OPENED the draw!!
+				if (limitSwitchState1 == HIGH) { // when limit switch 1 is released during no operation in the closed position, this means somone has manually tried to pull the draw open!
 					drawPosition = "open";
 					stopDrawFromMoving(); // safety measure
 					awaitingIntervention = true; // This prevents the program from getting stuck into a loop, this remains true untill the draw is activated via button / MQTT
@@ -192,9 +195,9 @@ void loop() {
 				}
 			}
 			else if (drawPosition == "open") {
-				if (limitSwitchState0 == HIGH) { // when limit switches 1 is released during no operation in the open position, someone is trying to manually push the draw back in, so we will assist them!
+				if (limitSwitchState0 == HIGH) { // when limit switches 1 is released during no operation in the open position, someone is trying to manually push the draw back in, so we will assist them.
 					drawPosition = "open";
-					awaitingIntervention = true; // This prevents the program from getting stuck into a loop, this remains true untill the draw is activated via button / MQTT
+					awaitingIntervention = true; // This prevents the program from getting stuck into a loop, this remains true untill the draw is manually re-activated via button / MQTT
 					client.publish("acs_output", (char*)"C_ASIST"); 
 					close_draw();
 				}
