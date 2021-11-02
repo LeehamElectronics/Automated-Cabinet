@@ -52,6 +52,17 @@
 
 /* We use ArduinoJSON so we can send, recieve and decode JSON data via MQTT */
 #include <ArduinoJson.h> 
+
+/* Syslog */
+#include "papertrail_credentials.h"
+#include "PapertrailLogger.h"
+PapertrailLogger* errorLog;
+PapertrailLogger* warningLog;
+PapertrailLogger* noticeLog;
+PapertrailLogger* debugLog;
+PapertrailLogger* infoLog;
+
+
 #pragma endregion
 
 /* ---------------------------------------------------------------------------------------------------------------------------
@@ -99,7 +110,7 @@ void setup() {
 	pinMode(limitSwitchPin0, INPUT_PULLUP);  /* Although we told the ESP32 to pullup this pin, some chips don't support it so you need to manually pull this up with a resistor. */
 	pinMode(limitSwitchPin1, INPUT_PULLUP);
 	pinMode(manualToggleButtonPin, INPUT_PULLUP);
-	Serial.begin(9600); /* Start the serial monitor so we can see what the ESP32 is thinking via serial USB connection, this is good for diagnosing issues. */
+	Serial.begin(115200);
 	Serial.println("Automated Cabinet Systems Starting, Built and Designed By Liam Price 2017");
 
 	Serial.println("Connecting to WiFi...");
@@ -121,6 +132,14 @@ void setup() {
 	/* Now we can try connecitng to our MQTT server */
 	client.setServer(MQTT_SERVER, MQTT_PORT); // configure these in mqttConfiguration.h file
 	client.setCallback(callback);
+
+	errorLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Error, "\033[0;31m", "papertrail-test", "testing");
+	warningLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Warning, "\033[0;33m", "papertrail-test", "testing");
+	noticeLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Notice, "\033[0;36m", "papertrail-test", "testing");
+	debugLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Debug, "\033[0;32m", "papertrail-test", "testing");
+	infoLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Info, "\033[0;34m", "papertrail-test", "testing");
+
+	noticeLog->printf("ESP32 ACS BOOT %d\n", 1);
 
 	Serial.println("Setup function completed");
 	delay(100); /* Give our ESP32 some time to breath right? */
