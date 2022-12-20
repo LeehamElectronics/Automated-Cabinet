@@ -8,6 +8,7 @@ __vm/
 AutomatedCabinetV3.sln
 AutomatedCabinetV3.vcxproj
 AutomatedCabinetV3.vcxproj.filters
+include/*
 
 # User-specific files
 *.rsuser

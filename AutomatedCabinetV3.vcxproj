@@ -114,13 +114,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PapertrailLogger.h" />
-    <ClInclude Include="papertrail_credentials.h" />
     <ClInclude Include="__vm\.Automated-Cabinet.vsarduino.h" />
     <ClInclude Include="__vm\.AutomatedCabinetV3.vsarduino.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="PapertrailLogger.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
