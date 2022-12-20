@@ -1,5 +1,5 @@
 # Automated IoT Cabinet
-## This repo contains the software I wrote for my Year 9 school project.
+## This repo contains the software I wrote for my Year 9 high school project.
 
 #
 
@@ -26,5 +26,3 @@ This project uses c++, c, and other technologies for the front end such as NodeR
 
 
 ###### Credit to my awesome high school teacher Steve Donaldson for teaching me fundamentals in electronics / general technologies and supporting me while I built this project at school!
-
-*It ain't much but it's honest work*
