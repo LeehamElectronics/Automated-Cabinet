@@ -139,9 +139,8 @@ void setup() {
 	debugLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Debug, "\033[0;32m", "papertrail-test", "testing");
 	infoLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Info, "\033[0;34m", "papertrail-test", "testing");
 
-	noticeLog->printf("ESP32 ACS BOOT %d\n", 1);
+	// noticeLog->printf("Setup function completed\n");
 
-	Serial.println("Setup function completed");
 	delay(100); /* Give our ESP32 some time to breath right? */
 
 }
@@ -230,7 +229,7 @@ void loop() {
 
 
 	if (!client.connected()) {
-		Serial.println("Not connected to MQTT, trying to connect to broker...");
+		// noticeLog->printf("Lost connection to MQTT broker, reconnecting... \n");
 		stopDrawFromMoving();  // Must stop motors before exiting loop to search for MQTT server
 		reconnect();
 	}
@@ -375,13 +374,12 @@ void reconnect() {
 		Serial.print("Attempting MQTT connection...");
 		/* Attempt to connect */
 		if (client.connect("AutomatedCabinet", MQTT_USERNAME, MQTT_PASSWORD)) {
-			Serial.println("connected");
+			// noticeLog->printf("connected to mqtt broker \n");
 			/* General input to tank from control panel: */
 			client.subscribe("acs_input");
 		}
 		else {
-			Serial.print("failed, rc="); /* Print error code, here is your reference: https://ldprice.com/public_images/chrome_LaZ4xARWcT.png */
-			Serial.print(client.state());
+			// noticeLog->printf(client.state() + " RC code, failed to connect to mqtt \n");  /* Print error code, here is your reference: https://ldprice.com/public_images/chrome_LaZ4xARWcT.png */
 			Serial.println(" try again in 2 seconds");
 			/* Wait 2 seconds before retrying (don't wanna get flagged as a DOS attack...) */
 			delay(2000);
@@ -389,4 +387,4 @@ void reconnect() {
 		}
 	}
 }
-#pragma endregion
+
