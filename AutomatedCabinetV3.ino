@@ -24,13 +24,20 @@
 --------------------------------------------------    Include Libraries   ----------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------- */
 #pragma region
+
 #include "include/mqttConfiguration.h"  /* mqtt config file, see wiki for details on how to create it: https://github.com/LeehamElectronics/Automated-Cabinet/wiki */
 #include "include/configuration.h" /* general config file to make life easier for you */
 
+/* JSON */
+#include <ArduinoJson.h>
+
 /* WiFiManager Development builds seem to work better and are more stable: https://github.com/tzapu/WiFiManager/tree/development */
 /* If WiFi Manager has HTTP Header issues use the following lib instead: https://github.com/Brunez3BD/WIFIMANAGER-ESP32 */
-#include <WiFiManager.h> 
 #include <WiFi.h>
+#include <wm_strings_en.h>
+#include <wm_consts_en.h>
+#include <WiFiManager.h>
+#include <strings_en.h>
 
 /*
  * This 'PubSubClient' is actually the MQTT Arduino Library that we are using to make the Arduino
@@ -41,37 +48,28 @@
  */
 #include <PubSubClient.h> 
 
-/* this was required for ESP32 chips to use analogWrite for some reason, look it up https://github.com/ERROPiX/ESP32_AnalogWrite */
-#include <analogWrite.h> 
+/* Web server libraries for OTA */
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncElegantOTA.h>
 
-/*
- * Used to store information even when the robot is turned off, dont abuse it (stay away from for loops lol), only has a set
- * amount of read / write cycles. If you need to use EEPROM A LOT try using a SD Card instead!
- */
+
+ /*
+  * Used to store information even when the robot is turned off, dont abuse it (stay away from for loops lol), only has a set
+  * amount of read / write cycles. If you need to use EEPROM A LOT try using a SD Card instead!
+  */
 #include <EEPROM.h> 
-
-/* We use ArduinoJSON so we can send, recieve and decode JSON data via MQTT */
-#include <ArduinoJson.h> 
-
-/* Syslog */
-#include "papertrail_credentials.h"
-#include "PapertrailLogger.h"
-PapertrailLogger* errorLog;
-PapertrailLogger* warningLog;
-PapertrailLogger* noticeLog;
-PapertrailLogger* debugLog;
-PapertrailLogger* infoLog;
-
 
 #pragma endregion
 
-/* ---------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------    Create Main Objects   ---------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------------------------------------------------------------
+  -------------------------------------------------    Create Main Objects   ---------------------------------------------------
+  --------------------------------------------------------------------------------------------------------------------------- */
 #pragma region
 WiFiClient espClient;
 PubSubClient client(espClient);
 WiFiManager wifiManager;
+AsyncWebServer server(80);
 #pragma endregion
 
 
@@ -81,7 +79,7 @@ WiFiManager wifiManager;
 #pragma region
 /* See Wiki for a schematic and more detailed pinout menu: https://github.com/LeehamElectronics/Automated-Cabinet/wiki */
 const int limitSwitchPin0 = 17;	           /* Front limit switch (closed when cabinet is in open position) */
-const int limitSwitchPin1 = 18;            /* Rear limit switch (closed when cabinet is in closed position) */ 
+const int limitSwitchPin1 = 18;            /* Rear limit switch (closed when cabinet is in closed position) */
 const int manualToggleButtonPin = 16;      /* This button is hidden inside the cabinet, can be used for testing */
 const int hBridgeMotorPin0 = 19;           /* the number of the h bridge pin 1 */
 const int hBridgeMotorPin1 = 21;           /* the number of the h bridge pin 2 */
@@ -129,19 +127,21 @@ void setup() {
 	/* If program gets to this point that means we connected to WiFi successfully! */
 	Serial.println("Connected to WiFi successfully :)");
 
+	server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
+		request->send(200, "text/plain", "Hi! I am ESP32.");
+		});
+
+	AsyncElegantOTA.begin(&server, "admin", "ultraScreen#tyO7");    // Start ElegantOTA
+	server.begin();
+	Serial.println("HTTP server started");
+
 	/* Now we can try connecitng to our MQTT server */
 	client.setServer(MQTT_SERVER, MQTT_PORT); // configure these in mqttConfiguration.h file
 	client.setCallback(callback);
 
-	errorLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Error, "\033[0;31m", "papertrail-test", "testing");
-	warningLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Warning, "\033[0;33m", "papertrail-test", "testing");
-	noticeLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Notice, "\033[0;36m", "papertrail-test", "testing");
-	debugLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Debug, "\033[0;32m", "papertrail-test", "testing");
-	infoLog = new PapertrailLogger(PAPERTRAIL_HOST, PAPERTRAIL_PORT, LogLevel::Info, "\033[0;34m", "papertrail-test", "testing");
-
-	// noticeLog->printf("Setup function completed\n");
-
 	delay(100); /* Give our ESP32 some time to breath right? */
+
+	client.publish("smarthome/myDevices/acs/network", (char*)"acs_booted");
 
 }
 
@@ -156,14 +156,14 @@ void loop() {
 	limitSwitchState1 = digitalRead(limitSwitchPin1);  /* Rear limit switch (closed when cabinet is in closed position) */
 	manualToggleButtonState = digitalRead(manualToggleButtonPin);  /* This button is hidden inside the cabinet, can be used for testing... */
 
-    if (drawIsMoving == true) {
+	if (drawIsMoving == true) {
 
 		if (drawMovingDirection == "opening") {
 
-			if (limitSwitchState0 == LOW) { 
+			if (limitSwitchState0 == LOW) {
 				drawPosition = "open";
 				stopDrawFromMoving();
-				client.publish("acs_output", (char*)"OPEN");
+				client.publish("smarthome/myDevices/acs/status", (char*)"draw_is_open");
 			}
 			else {
 				/* Fail safe timout check routine */
@@ -173,7 +173,7 @@ void loop() {
 					previousMillis = currentMillis;
 					awaitingIntervention = true;
 					stopDrawFromMoving();
-					client.publish("acs_output", (char*)"ERROR26");
+					client.publish("smarthome/myDevices/acs/error", (char*)"limit_0");
 					Serial.println("ERROR! Motors have stopped due to timeout, are the limit switches broken? Is there to much weight in the Draw?");
 				}
 			}
@@ -184,7 +184,7 @@ void loop() {
 			if (limitSwitchState1 == LOW) { // when limit switch 1 is hit, the draw is CLOSED
 				drawPosition = "closed";
 				stopDrawFromMoving();
-				client.publish("acs_output", (char*)"CLOSED");
+				client.publish("smarthome/myDevices/acs/status", (char*)"draw_is_closed");
 			}
 			else {
 				/* Fail safe timout check routine */
@@ -194,12 +194,12 @@ void loop() {
 					previousMillis = currentMillis;
 					awaitingIntervention = true;
 					stopDrawFromMoving();
-					client.publish("acs_output", (char*)"ERROR26");
+					client.publish("smarthome/myDevices/acs/error", (char*)"limit_0");
 					Serial.println("ERROR! Motors have stopped due to timeout, are the limit switches broken? Is there to much weight in the Draw?");
 				}
-			}		
+			}
 		}
-    }
+	}
 	else {
 		if (awaitingIntervention == false)
 		{
@@ -209,23 +209,23 @@ void loop() {
 					drawPosition = "open";
 					stopDrawFromMoving(); // safety measure
 					awaitingIntervention = true; // This prevents the program from getting stuck into a loop, this remains true untill the draw is activated via button / MQTT
-					client.publish("acs_output", (char*)"ERROR11");
+					client.publish("smarthome/myDevices/acs/error", (char*)"phys_breach_0");
 				}
 			}
 			else if (drawPosition == "open") {
 				if (limitSwitchState0 == HIGH) { // when limit switches 1 is released during no operation in the open position, someone is trying to manually push the draw back in, so we will assist them.
 					drawPosition = "open";
 					awaitingIntervention = true; // This prevents the program from getting stuck into a loop, this remains true untill the draw is manually re-activated via button / MQTT
-					client.publish("acs_output", (char*)"C_ASIST"); 
+					client.publish("smarthome/myDevices/acs/notice", (char*)"close_assist_0");
 					close_draw();
 				}
 			}
 		}
 	}
 
-    if (manualToggleButtonState == LOW) {    // if internal button is manually hit, activate draw
+	if (manualToggleButtonState == LOW) {    // if internal button is manually hit, activate draw
 		toggle_draw();
-		}
+	}
 
 
 	if (!client.connected()) {
@@ -235,7 +235,7 @@ void loop() {
 	}
 	client.loop();
 
-}				
+}
 
 
 /* ---------------------------------------------------------------------------------------------------------------------------
@@ -243,16 +243,16 @@ void loop() {
 --------------------------------------------------------------------------------------------------------------------------- */
 #pragma region
 void toggle_draw() {
-    Serial.println("Draw Activated");
+	Serial.println("Draw Activated");
 	previousMillis = millis(); // Reset Fail Safe Timer
-    if (drawPosition == "open") {
-        drawBackward();
-        drawPosition = "closed";
-    }
-    else if (drawPosition == "closed") {
-        drawForward();
-        drawPosition = "open";
-    }
+	if (drawPosition == "open") {
+		drawBackward();
+		drawPosition = "closed";
+	}
+	else if (drawPosition == "closed") {
+		drawForward();
+		drawPosition = "open";
+	}
 }
 
 void open_draw() {
@@ -266,7 +266,7 @@ void open_draw() {
 	else
 	{
 		Serial.println("Draw is already Open!");
-		client.publish("acs_output", (char*)"A_OPEN");
+		client.publish("smarthome/myDevices/acs/log", (char*)"already_open");
 	}
 }
 
@@ -281,7 +281,7 @@ void close_draw() {
 	else
 	{
 		Serial.println("Draw is already Closed!");
-		client.publish("acs_output", (char*)"A_CLOSED");
+		client.publish("smarthome/myDevices/acs/log", (char*)"already_closed");
 	}
 }
 #pragma endregion
@@ -292,30 +292,33 @@ void close_draw() {
 --------------------------------------------------------------------------------------------------------------------------- */
 #pragma region
 void drawForward() {
-    /* Turn H Bridge motor driver on in the foward polarity */
-    digitalWrite(hBridgeMotorPin0, LOW);
-    digitalWrite(hBridgeMotorPin1, HIGH);
-    Serial.println("motor-foward-func");
+	/* Turn H Bridge motor driver on in the foward polarity */
+	client.publish("smarthome/myDevices/acs/status", (char*)"draw_is_opening");
+	digitalWrite(hBridgeMotorPin0, LOW);
+	digitalWrite(hBridgeMotorPin1, HIGH);
+	Serial.println("motor-foward-func");
 	drawIsMoving = true;
 	drawMovingDirection = "opening";
 }
 
 /* Inverse function of function above */
 void drawBackward() {
-    // turn H Bridge on with the REVERSED polarity
-    digitalWrite(hBridgeMotorPin0, HIGH);
-    digitalWrite(hBridgeMotorPin1, LOW);
-    Serial.println("motor-back-func");
+	// turn H Bridge on with the REVERSED polarity
+	client.publish("smarthome/myDevices/acs/status", (char*)"draw_is_closing");
+	digitalWrite(hBridgeMotorPin0, HIGH);
+	digitalWrite(hBridgeMotorPin1, LOW);
+	Serial.println("motor-back-func");
 	drawIsMoving = true;
 	drawMovingDirection = "closing";
 }
 
 /* Stop H Bridge motor driver */
 void stopDrawFromMoving() {
-    //turn H Bridge motor driver OFF by turning both pins to LOW
-    digitalWrite(hBridgeMotorPin0, LOW);
-    digitalWrite(hBridgeMotorPin1, LOW);
-    Serial.println("motor-stop-func");
+	//turn H Bridge motor driver OFF by turning both pins to LOW
+	client.publish("smarthome/myDevices/acs/status", (char*)"draw_is_halted");
+	digitalWrite(hBridgeMotorPin0, LOW);
+	digitalWrite(hBridgeMotorPin1, LOW);
+	Serial.println("motor-stop-func");
 	drawIsMoving = false;
 	drawMovingDirection = "null";
 }
@@ -342,8 +345,7 @@ void configModeCallback(WiFiManager* myWiFiManager) {
 void callback(char* topic, byte* payload, unsigned int length) {
 	Serial.print("Topic is: ");
 	Serial.println(topic);
-	if (strcmp(topic, "acs_input") == 0) {
-		Serial.println("acs_input");
+	if (strcmp(topic, "smarthome/myDevices/acs/input") == 0) {
 		String payload_formatted = String((char*)payload);
 		Serial.println("Payload formatted is: " + payload_formatted);
 		Serial.println("Payload NOT formatted is: " + String(payload[0]));
@@ -376,7 +378,8 @@ void reconnect() {
 		if (client.connect("AutomatedCabinet", MQTT_USERNAME, MQTT_PASSWORD)) {
 			// noticeLog->printf("connected to mqtt broker \n");
 			/* General input to tank from control panel: */
-			client.subscribe("acs_input");
+			client.publish("smarthome/myDevices/acs/network", (char*)"acs_mqtt_reconnected");
+			client.subscribe("smarthome/myDevices/acs/input");
 		}
 		else {
 			// noticeLog->printf(client.state() + " RC code, failed to connect to mqtt \n");  /* Print error code, here is your reference: https://ldprice.com/public_images/chrome_LaZ4xARWcT.png */
@@ -387,4 +390,3 @@ void reconnect() {
 		}
 	}
 }
-
